@@ -1,0 +1,474 @@
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
+    "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.mainBody {
+  position: relative;
+  height: 100vh;
+  background-color: transparent;
+}
+.mainBody::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: url("../public/images/bgPic.avif");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  opacity: 0.3;
+  z-index: -1;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
+    monospace;
+}
+
+/*------------- Home page ----------------*/
+
+.homeHeading1 {
+  font-style: sans-serif;
+  font-weight: 900;
+}
+.homeBodyLeft {
+  position: relative;
+  height: 550px;
+  padding-top: 40px;
+  overflow: hidden;
+}
+.homeBodyRight {
+  position: relative;
+  padding-left: 60px;
+  margin-left: 60px;
+  /* margin-left: 30px; */
+  padding-top: 40px;
+}
+.homeCardImage {
+  position: relative;
+  height: 200px;
+  background-image: url("https://img.freepik.com/free-photo/two-happy-female-friends-looking-each-other-fitness-club_23-2147949513.jpg?t=st=1719381255~exp=1719384855~hmac=d247b2fa528d36d752e8f63357f1705ec9f9b3e56e8a848e7683324c72e51c44&w=900");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  margin: 5px;
+  width: 420px;
+  border-radius: 8px;
+  box-shadow: rgba(50, 50, 93, 0.25) 0px 50px 100px -20px,
+    rgba(0, 0, 0, 0.3) 0px 30px 60px -30px,
+    rgba(10, 37, 64, 0.35) 0px -2px 6px 0px inset;
+  overflow: hidden;
+}
+.homeCardImage1 {
+  position: relative;
+  height: 200px;
+  background-image: url("https://img.freepik.com/free-photo/brunette-businesswoman-posing_23-2148142728.jpg?size=626&ext=jpg&ga=GA1.1.366805866.1719309107&semt=ais_user");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  margin: 5px;
+  width: 420px;
+  border-radius: 8px;
+  box-shadow: rgba(50, 50, 93, 0.25) 0px 50px 100px -20px,
+    rgba(0, 0, 0, 0.3) 0px 30px 60px -30px,
+    rgba(10, 37, 64, 0.35) 0px -2px 6px 0px inset;
+  overflow: hidden;
+}
+.homeCardText {
+  background-color: rgba(0, 0, 0, 0.4);
+  color: white;
+  font-weight: bold;
+  border: 3px solid #f1f1f1;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 2;
+  width: 80%;
+  padding: 17px;
+  text-align: center;
+}
+@media (max-width: 768px) {
+  .homeBodyRight {
+    padding-left: auto;
+    margin-left: 0;
+    /* padding-top: 10px; */
+  }
+
+  .homeCardText {
+    font-size: 14px;
+    padding: 10px;
+  }
+}
+
+/* -----------------Professional page-------------- */
+
+.ProfesBody {
+  background-color: #f9f9f9;
+  width: 100%;
+  height: 100%;
+  background-color: #f9f9f9;
+  overflow-x: hidden;
+  background: linear-gradient(to right, #2537af, #71e5cb);
+}
+
+.containerProfessional {
+  width: 80%;
+  max-width: 800px;
+  margin: 50px auto;
+  padding: 20px;
+  border-radius: 10px;
+  background-color: #ffffff;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  font-family: "Arial, sans-serif";
+}
+
+.Professionalh1 {
+  margin-bottom: 20px;
+  /* font-size: 50px; */
+  font-size: 24px;
+  font-weight: 800;
+  color: #333333;
+  text-align: center;
+}
+
+.Professionalform {
+  display: flex;
+  flex-direction: column;
+}
+
+.columnContainer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.leftColumn {
+  width: 55%; /* Left column takes 55% of the container */
+}
+
+.rightColumn {
+  width: calc(
+    45% - 10px
+  ); /* Right column takes up remaining space minus spacing */
+}
+
+.inputProfessional {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 16px;
+}
+
+.selectProfessional {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 16px;
+}
+
+.professionalbtn {
+  width: 100%;
+  padding: 10px;
+  background-color: #28a745;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: 800;
+  font-size: 16px;
+  text-align: center;
+}
+
+.professionalbtn:hover {
+  background-color: #218838;
+}
+.quote {
+  font-family: "Georgia", serif;
+  font-style: italic;
+  font-size: 1.5em;
+  padding: 20px;
+  margin: 0 20px 20px 20px;
+  border-left: 5px solid #ccc;
+
+  color: #1e1717;
+  position: relative;
+  padding-left: 38px;
+}
+
+.quote:before {
+  content: open-quote;
+  font-size: 2em;
+  position: absolute;
+  left: 10px;
+  top: 5px;
+  color: #ccc;
+}
+
+.quote:after {
+  content: close-quote;
+  font-size: 2em;
+  position: absolute;
+  right: 960px;
+  bottom: 5px;
+  color: #ccc;
+}
+.secondquote {
+  left: 900px;
+}
+
+.viewHeading {
+  /* font-family: "Arial", sans-serif; */
+  font-family: cursive;
+  font-size: 2em;
+  color: #4ed199;
+  margin-bottom: 20px;
+  font-weight: bold;
+  text-align: center;
+  margin-top: 30px;
+  position: relative;
+}
+
+.viewHeading::after {
+  content: ""; /* Required for pseudo-elements */
+  position: absolute;
+  bottom: -3px; /* Adjust this value to control the distance of the underline from text */
+  left: 50%; /* Center the underline */
+  width: 200px; /* Adjust the width of the underline */
+  height: 3px; /* Adjust the thickness of the underline */
+  background-color: #fff; /* Color of the underline */
+  transform: translateX(-50%); /* Center the underline precisely */
+}
+.viewTasks {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+}
+
+.blog {
+  position: relative;
+  padding: 30px 40px;
+  /* color: black; */
+  color: white;
+  border: 2px solid white;
+  border-radius: 5px;
+  margin: 50px 60px 20px 60px;
+  width: 250px;
+  text-align: center;
+  font-weight: 500;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  font-family: "Georgia", serif;
+  font-size: 1.2em;
+  overflow: hidden;
+  background: linear-gradient(to bottom right, #ffed4b 10%, transparent 50%);
+  background-size: 200% 200%;
+  transition: background-position 0.3s;
+}
+
+.blog:hover {
+  transform: scale(1.05);
+  background-position: 100% 100%; /* Move the background to fill the element on hover */
+}
+
+.blog::after {
+  content: "";
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(to bottom right, #ffed4b 50%, transparent 50%);
+  background-size: 200% 200%;
+  transition: background-position 0.3s;
+  z-index: -1;
+}
+
+.blog:hover::after {
+  background-position: 100% 100%;
+}
+@media (max-width: 768px) {
+  .viewTasks {
+    flex-direction: column;
+  }
+
+  .leftColumn,
+  .rightColumn {
+    width: 100%; /* Full width for each column */
+  }
+
+  .blog {
+    margin: 20px auto; /* Center blogs on smaller screens */
+    width: 60%; /* Full width on smaller screens */
+  }
+
+  .quote {
+    margin: 20px;
+    /* Ensure quotes have consistent margins */
+  }
+  .quote:before,
+  .quote:after {
+    content: ""; /* Remove quote marks on smaller screens */
+  }
+
+  .secondquote {
+    left: 10px;
+  }
+}
+/* -----------------High page---------------- */
+
+.high-container {
+  width: 100%;
+  height: 100%;
+  /* max-width: 1000px; */
+  /* margin: 0 auto; */
+  /* padding: 20px; */
+  background-color: #f8f9fb; /* Dark background for main window */
+  color: #f7fafc; /* Text color for dark background */
+  font-family: Arial, sans-serif;
+}
+
+/* .high-title {
+  text-align: center;
+  color: #1a202c;
+  font-family: sans-serif; 
+  font-weight: 600;
+  font-size: 40px;
+  margin-bottom: 20px;
+  background-color: #4dce97;
+  padding: 13px;
+} */
+.high-title {
+  font-family: "Arial", sans-serif;
+  /* font-family: cursive; */
+  font-size: 2em;
+  color: black;
+  font-weight: bold;
+  text-align: center;
+  position: relative;
+  padding-top: 30px;
+}
+.high-h3 {
+  color: black;
+  font-family: Georgia, "Times New Roman", Times, serif;
+  font-size: 23px;
+  margin-left: 30px;
+}
+
+.high-title::after {
+  content: ""; /* Required for pseudo-elements */
+  position: absolute;
+  bottom: -5px; /* Adjust this value to control the distance of the underline from text */
+  left: 50%; /* Center the underline */
+  width: 100px; /* Adjust the width of the underline */
+  height: 3px; /* Adjust the thickness of the underline */
+  background-color: #4ed199; /* Color of the underline */
+  transform: translateX(-50%); /* Center the underline precisely */
+}
+
+.header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  margin: 20px 30px;
+}
+
+.high-task-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  list-style-type: none;
+  padding: 0;
+}
+
+.high-task-item {
+  background: #ffffff; /* White background for tasks */
+  color: #1a202c; /* Dark text color for tasks */
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 100%; /* Full width by default */
+  max-width: 400px; /* Maximum width for each card */
+  flex: 1 1 calc(33.33% - 20px); /* Adjust width to fit 3 cards per row with gap */
+  box-sizing: border-box;
+  margin: 0 auto;
+}
+
+.high-task-item h2 {
+  margin: 0 0 10px;
+  font-size: 1.5em;
+  color: #007bff;
+}
+
+.high-task-item p {
+  margin: 5px 0;
+}
+
+.high-task-item p:last-child {
+  margin-bottom: 10px;
+}
+
+.high-task-item button {
+  margin-right: 10px;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 0.9em;
+}
+
+.high-task-item button:hover {
+  opacity: 0.9;
+}
+
+.high-task-item button.high-edit {
+  background-color: #ffc107;
+  color: #fff;
+}
+
+.high-task-item button.high-remove {
+  background-color: #dc3545;
+  color: #fff;
+}
+
+.high-task-item button.high-toggle {
+  background-color: #28a745;
+  color: #fff;
+}
+
+.high-task-item button.high-save,
+.high-task-item button.high-cancel {
+  margin-top: 10px;
+}
+
+.high-search {
+  display: block;
+  width: 700px;
+  padding: 10px;
+  margin-bottom: 20px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  margin-left: 70px;
+  margin-top: 5px;
+}
+.high-search:focus {
+  color: #000000; /* Text color on focus */
+  background-color: #edf2f7; /* Lighter background on focus */
+  outline: none; /* Remove default focus outline */
+  border: 1px solid #3182ce; /* Highlight border on focus */
+}
