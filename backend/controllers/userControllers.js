@@ -53,7 +53,7 @@ const authUser = async (req, res) => {
     if (!user) {
       return res.json({ error: "No email existed" });
     }
-
+~
     // Compare the entered password with the hashed password in the database
     const passwordMatch = await bcrypt.compare(password, user.password);
     if (!passwordMatch) {
