@@ -4,19 +4,28 @@ const dotenv = require("dotenv");
 const userRoutes = require("../backend/routes/userRoutes");
 const mongoose = require("mongoose");
 const cors = require("cors");
+const cookieParser = require("cookie-parser");
+const bodyParser = require("body-parser");
 const {
   notFound,
   errorHandler,
 } = require("../backend/middleware/errorMiddleware");
+const { authenticateToken } = require("../backend/controllers/userControllers");
 
 dotenv.config();
-
 connectDB();
-const app = express();
-app.use(cors());
-app.use(express.json()); // to accept json data
 
-// Updated Task schema with name, description, and dueDate
+const app = express();
+app.use(
+  cors({
+    origin: "http://localhost:3000",
+    credentials: true,
+  })
+);
+app.use(express.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(cookieParser());
+
 const TaskSchema = new mongoose.Schema(
   {
     name: {
@@ -25,13 +34,11 @@ const TaskSchema = new mongoose.Schema(
     },
     description: {
       type: String,
-      // required: true,
     },
-
     priority: {
       type: String,
       required: true,
-      enum: ["high", "medium", "low"],
+      enum: ["high", "medium", "personal"],
       default: "medium",
     },
     dueDate: {
@@ -39,22 +46,38 @@ const TaskSchema = new mongoose.Schema(
       required: true,
     },
     completed: Boolean,
+    userNumber: {
+      type: Number,
+      required: true,
+      ref: "User",
+    },
   },
   { timestamps: true }
 );
 
 const Task = mongoose.model("Task", TaskSchema);
 
-// Updated POST route to handle new fields
-app.post("/api/tasks", async (req, res) => {
+// Create Task
+app.post("/api/postTask", authenticateToken, async (req, res) => {
   try {
     const { name, description, priority, dueDate } = req.body;
+    const userNumber = req.user.userNumber; // Ensure this is defined
+    if (!userNumber) {
+      return res.status(403).json({ message: "User number is missing" });
+    }
+
+    if (!name || !priority || !dueDate) {
+      return res
+        .status(400)
+        .send({ message: "Please provide all required fields" });
+    }
+
     const newTask = await Task.create({
       name,
       description,
-      // task,
       priority,
       dueDate,
+      userNumber: req.user.userNumber, // Associate the task with the authenticated user's unique number
     });
 
     res.status(201).send(newTask);
@@ -64,10 +87,10 @@ app.post("/api/tasks", async (req, res) => {
   }
 });
 
-// Existing GET route
-app.get("/api/tasks", async (req, res) => {
+// Apply `authenticateToken` middleware to protect other routes
+app.get("/api/alltasks", authenticateToken, async (req, res) => {
   try {
-    const tasks = await Task.find();
+    const tasks = await Task.find({ userNumber: req.user.userNumber }); // Only get tasks for the authenticated user by their unique number
     res.status(200).send(tasks);
   } catch (error) {
     console.error("Error retrieving tasks:", error);
@@ -75,10 +98,12 @@ app.get("/api/tasks", async (req, res) => {
   }
 });
 
-// Delete task
-app.delete("/api/tasks/:id", async (req, res) => {
+app.delete("/api/deltasks/:id", authenticateToken, async (req, res) => {
   try {
-    const task = await Task.findByIdAndDelete(req.params.id);
+    const task = await Task.findOneAndDelete({
+      _id: req.params.id,
+      userNumber: req.user.userNumber, // Ensure the task belongs to the authenticated user by their unique number
+    });
     if (!task) {
       return res.status(404).send({ message: "Task not found" });
     }
@@ -89,78 +114,33 @@ app.delete("/api/tasks/:id", async (req, res) => {
   }
 });
 
-// Update task completion status
-app.patch("/api/tasks/:id", async (req, res) => {
+app.patch("/api/updatetasks/:id", authenticateToken, async (req, res) => {
   const { id } = req.params;
   const updatedData = req.body;
   try {
-    const task = await Task.findByIdAndUpdate(id, updatedData, { new: true });
-    if (task) {
-      res.json(task);
-    } else {
-      res.status(404).send("Task not found");
+    const task = await Task.findOneAndUpdate(
+      { _id: id, userNumber: req.user.userNumber }, // Ensure the task belongs to the authenticated user by their unique number
+      updatedData,
+      { new: true }
+    );
+    if (!task) {
+      return res.status(404).send("Task not found");
     }
+    res.json(task);
   } catch (error) {
     console.error("Error updating task:", error);
     res.status(500).send("Internal Server Error");
   }
 });
 
-// Uncomment and define the userRoutes if needed
-// const userRoutes = require('./routes/userRoutes');
-
-// const TaskSchema = new mongoose.Schema(
-//   {
-//     task: {
-//       type: String,
-//       required: true,
-//     },
-//     priority: {
-//       type: String,
-//       required: true,
-//       enum: ["high", "medium", "low"], // You can define acceptable values
-//       default: "medium",
-//     },
-//   },
-//   { timestamps: true }
-// );
-
-// const Task = mongoose.model("Task", TaskSchema);
-
-// app.post("/api/tasks", async (req, res) => {
-//   try {
-//     const { task, priority } = req.body;
-//     // const newTask = new Task({ task, priority });
-//     const newTask = await Task.create({
-//       task,
-//       priority,
-//     });
-
-//     // await newTask.save();
-//     res.status(201).send(newTask);
-//   } catch (error) {
-//     console.error("Error saving task:", error);
-//     res.status(500).send({ message: "Failed to add task", error });
-//   }
-// });
-
-// app.get("/api/tasks", async (req, res) => {
-//   try {
-//     const tasks = await Task.find();
-//     res.status(200).send(tasks);
-//   } catch (error) {
-//     console.error("Error retrieving tasks:", error);
-//     res.status(500).send({ message: "Failed to retrieve tasks", error });
-//   }
-// });
-
+// User Routes
 app.use("/api/user", userRoutes);
 
-// Error Handling middlewares
+// Error Handling Middlewares
 app.use(notFound);
 app.use(errorHandler);
-const Port = process.env.PORT || 5000;
 
-const server = app.listen(Port, () => {
-  console.log(`Server running on PORT ${Port}...`.yellow.bold);
+const port = process.env.PORT || 5000;
+app.listen(port, () => {
+  console.log(`Server running on PORT ${port}...`);
 });

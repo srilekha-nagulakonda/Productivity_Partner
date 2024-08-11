@@ -9,12 +9,10 @@ import {
   Tabs,
   Text,
 } from "@chakra-ui/react";
-// import { useState, useEffect } from "react";
-// import { useHistory } from "react-router";
 import Login from "../components/Authentication/Login";
 import Signup from "../components/Authentication/sign-in";
 
-const Auth = () => {
+const Auth = ({ setToken }) => {
   return (
     <Container maxW="xl" centerContent>
       <Box
@@ -39,7 +37,7 @@ const Auth = () => {
           </TabList>
           <TabPanels>
             <TabPanel>
-              <Login />
+              <Login setToken={setToken} />
             </TabPanel>
             <TabPanel>
               <Signup />

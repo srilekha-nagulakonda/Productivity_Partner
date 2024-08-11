@@ -1,57 +1,89 @@
-const asyncHandler = require("express-async-handler");
+const jwt = require("jsonwebtoken");
+const bcrypt = require("bcrypt");
 const User = require("../models/userModel");
-const generateToken = require("../config/generateToken");
 
-const registerUser = asyncHandler(async (req, res) => {
-  const { name, email, password } = req.body;
+const JWT_SECRET_KEY = "sri";
 
-  if (!name || !email || !password) {
-    res.status(400);
-    throw new Error("Please Enter all the Feilds");
-  }
+// Middleware to authenticate the token
+const authenticateToken = (req, res, next) => {
+  const authHeader = req.headers["authorization"];
+  const token = authHeader && authHeader.split(" ")[1];
+  console.log("Token received:", token);
+  if (token == null) return res.sendStatus(401); // No token provided
 
-  const userExists = await User.findOne({ email });
-
-  if (userExists) {
-    res.status(400);
-    throw new Error("User already exists");
-  }
-
-  const user = await User.create({
-    name,
-    email,
-    password,
+  jwt.verify(token, JWT_SECRET_KEY, (err, user) => {
+    if (err) {
+      console.error("Token verification failed:", err);
+      return res.status(403).json({ error: "Invalid or expired token" });
+    }
+    req.user = user;
+    next();
   });
+};
 
-  if (user) {
-    res.status(201).json({
-      _id: user._id,
-      name: user.name,
-      email: user.email,
-      token: generateToken(user._id),
-    });
-  } else {
-    res.status(400);
-    throw new Error("User not found");
-  }
-});
+// API for user registration
+const registerUser = async (req, res) => {
+  try {
+    const { name, email, password } = req.body;
 
-const authUser = asyncHandler(async (req, res) => {
-  const { email, password } = req.body;
+    // Creating a new user and saving it to the database
+    const newUser = new User({ name, email, password });
+    await newUser.save();
 
-  const user = await User.findOne({ email });
-
-  if (user && (await user.matchPassword(password))) {
     res.json({
-      _id: user._id,
-      name: user.name,
-      email: user.email,
-      token: generateToken(user._id),
+      status: "Success",
+      data: {
+        name: newUser.name,
+        email: newUser.email,
+        userNumber: newUser.userNumber,
+      },
     });
-  } else {
-    res.status(401);
-    throw new Error("Invalid Email or Password");
+  } catch (err) {
+    console.error("Error registering user:", err);
+    res.json({ error: "Error inserting data in server" });
   }
-});
+};
 
-module.exports = { registerUser, authUser };
+// API for user login
+const authUser = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.json({ error: "No email existed" });
+    }
+
+    // Compare the entered password with the hashed password in the database
+    const passwordMatch = await bcrypt.compare(password, user.password);
+    if (!passwordMatch) {
+      return res.json({ error: "Password not matched" });
+    }
+
+    // Include userNumber in the JWT payload
+    const token = jwt.sign(
+      { id: user._id, email: user.email, userNumber: user.userNumber },
+      JWT_SECRET_KEY,
+      {
+        expiresIn: "1d",
+      }
+    );
+
+    res.cookie("token", token);
+    res.json({ status: "Success", token });
+    // res.json({
+    //   status: "Success",
+    //   token,
+    //   data: {
+    //     name: user.name,
+    //     email: user.email,
+    //     userNumber: user.userNumber,
+    //   },
+    // });
+  } catch (err) {
+    console.error("Login error in server:", err);
+    res.json({ error: "Login error in server" });
+  }
+};
+
+module.exports = { registerUser, authUser, authenticateToken };

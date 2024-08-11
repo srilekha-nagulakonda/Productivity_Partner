@@ -1,15 +1,6 @@
-import {
-  Flex,
-  Heading,
-  IconButton,
-  Spacer,
-  VStack,
-  Text,
-  Box,
-  Image,
-} from "@chakra-ui/react";
+import { Text, Box } from "@chakra-ui/react";
 import React, { useEffect, useState } from "react";
-import { useLocation } from "react-router-dom";
+
 // import React from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -18,18 +9,17 @@ import Navbar from "../components/Navbar";
 
 const Profiles = () => {
   const navigate = useNavigate();
-  const location = useLocation();
+
   const [userName, setUserName] = useState("");
 
   useEffect(() => {
     // Retrieve user info from localStorage
     const userInfo = JSON.parse(localStorage.getItem("userInfo"));
-    if (userInfo && userInfo.name) {
-      setUserName(userInfo.name);
-    } else if (location.state && location.state.name) {
-      setUserName(location.state.name);
+    console.log("Retrieved userInfo:", userInfo); // Debugging line
+    if (userInfo && userInfo.data && userInfo.data.name) {
+      setUserName(userInfo.data.name); // Update to access name correctly
     }
-  }, [location.state]);
+  }, []);
 
   const goToProfessionalPage = () => {
     navigate("/professional");
@@ -45,7 +35,12 @@ const Profiles = () => {
         <div className="row">
           <div className="col-md-6 homeBodyLeft">
             <Box>
-              <Text fontWeight="semibold" fontSize={"4xl"} fontFamily="cursive">
+              <Text
+                fontWeight="semibold"
+                fontSize={"4xl"}
+                fontFamily="cursive"
+                color="white"
+              >
                 Hello {userName},
               </Text>
               <Text

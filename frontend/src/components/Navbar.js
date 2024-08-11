@@ -7,41 +7,57 @@ import {
   VStack,
   Image,
 } from "@chakra-ui/react";
-import { FaSun, FaMoon, FaLinkedin, FaGithub } from "react-icons/fa";
-import { useColorMode } from "@chakra-ui/color-mode";
+import { FaLinkedin, FaGithub } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
+import { IoIosAlarm } from "react-icons/io";
 
 const Navbar = () => {
-  const { colorMode, toggleColorMode } = useColorMode();
-  const isDark = colorMode === "dark";
+  const navigate = useNavigate();
+
+  const handleReminderClick = () => {
+    navigate("/notification");
+  };
+
   return (
-    <div>
-      <VStack p={5}>
-        <Flex w="100%" alignItems="center">
+    <VStack p={5} w="100%">
+      <Flex w="100%" alignItems="center" justifyContent="space-between">
+        <Flex alignItems="center">
           <Image src="/logo1.png" alt="logo" height={10} />
           <Heading
             ml="1"
             fontWeight="semibold"
             color="cyan.400"
-            size="md"
+            size={{ base: "sm", md: "md" }}
             fontFamily="Georgia"
             className="homeHeading1"
             pt="4px"
           >
             PRODUCTIVITY
           </Heading>
-          <Spacer />
-          <IconButton icon={<FaGithub />} ml={2} isRound="true" />
-          <IconButton icon={<FaLinkedin />} ml={2} isRound="true" />
+        </Flex>
+        <Flex>
           <IconButton
-            icon={isDark ? <FaSun /> : <FaMoon />}
-            isRound="true"
-            ml="8"
-            onClick={toggleColorMode}
+            icon={<FaGithub />}
+            ml={2}
+            isRound={true}
+            aria-label="GitHub"
+          />
+          <IconButton
+            icon={<FaLinkedin />}
+            ml={2}
+            isRound={true}
+            aria-label="LinkedIn"
+          />
+          <IconButton
+            icon={<IoIosAlarm />}
+            ml={2}
+            isRound={true}
+            aria-label="Alarm"
+            onClick={handleReminderClick}
           />
         </Flex>
-      </VStack>
-      ;
-    </div>
+      </Flex>
+    </VStack>
   );
 };
 

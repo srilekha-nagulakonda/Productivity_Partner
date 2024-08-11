@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
+import CircularProgress from "../components/Progress";
 
 const HighPriorityPage = () => {
   const [tasks, setTasks] = useState([]);
@@ -11,6 +12,7 @@ const HighPriorityPage = () => {
     completed: false,
   });
   const [searchQuery, setSearchQuery] = useState("");
+  const [expandedDescriptionId, setExpandedDescriptionId] = useState(null);
 
   const fetchTasks = async () => {
     try {
@@ -132,28 +134,32 @@ const HighPriorityPage = () => {
       ? (completedTasksCount / filteredTasks.length) * 100
       : 0;
 
+  const toggleDescription = (id) => {
+    setExpandedDescriptionId(expandedDescriptionId === id ? null : id);
+  };
+
   return (
     <div className="high-container">
       <h1 className="high-title">High Priority Tasks</h1>
-      <input
-        type="text"
-        placeholder="Search by name, date, or status"
-        value={searchQuery}
-        onChange={handleSearchChange}
-        className="high-search"
-      />
-      <div className="progress">
-        <div
-          className="progress-bar progress-bar-success progress-bar-striped"
-          role="progressbar"
-          aria-valuenow={completionPercentage}
-          aria-valuemin="0"
-          aria-valuemax="100"
-          style={{ width: `${completionPercentage}%` }}
-        >
-          {`${completionPercentage.toFixed(2)}% Complete`}
+      <div className="header-row">
+        <div>
+          <h3 className="high-h3">
+            {" "}
+            Search the Assignment by Name/Date/Status
+          </h3>
+          <input
+            type="text"
+            placeholder="Search by name, date, or status"
+            value={searchQuery}
+            onChange={handleSearchChange}
+            className="high-search"
+          />
+        </div>
+        <div style={{ width: "200px", marginRight: "50px" }}>
+          <CircularProgress value={completionPercentage} />
         </div>
       </div>
+
       <ul className="high-task-list">
         {filteredTasks.map((task) => (
           <li key={task._id} className="high-task-item">
@@ -215,7 +221,21 @@ const HighPriorityPage = () => {
             ) : (
               <>
                 <h2>{task.name}</h2>
-                <p>{task.description}</p>
+                <p>
+                  {expandedDescriptionId === task._id
+                    ? task.description
+                    : `${task.description.slice(0, 100)}${
+                        task.description.length > 100 ? "..." : ""
+                      }`}
+                  {task.description.length > 100 && (
+                    <button
+                      className="high-more"
+                      onClick={() => toggleDescription(task._id)}
+                    >
+                      {expandedDescriptionId === task._id ? "Less" : "More"}
+                    </button>
+                  )}
+                </p>
                 <p>Due Date: {new Date(task.dueDate).toLocaleDateString()}</p>
                 <p>Status: {task.completed ? "Completed" : "Incomplete"}</p>
                 <button className="high-edit" onClick={() => handleEdit(task)}>

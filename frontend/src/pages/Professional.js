@@ -1,34 +1,61 @@
-// src/pages/HomePage.js
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
 import Navbar from "../components/Navbar";
 import { useToast } from "@chakra-ui/toast";
 import { useNavigate } from "react-router-dom";
 
-const HomePage = () => {
+const HomePage = ({ token }) => {
   const toast = useToast();
   const [priority, setPriority] = useState("medium");
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [dueDate, setDueDate] = useState("");
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const userInfo = localStorage.getItem("userInfo");
+    if (!userInfo) {
+      navigate("/login");
+    }
+  }, [navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    try {
-      const response = await axios.post("/api/tasks", {
-        name,
-        description,
-        priority,
-        dueDate,
+    const userInfo = JSON.parse(localStorage.getItem("userInfo"));
+    if (!userInfo) {
+      toast({
+        title: "Authentication Required",
+        description: "Please log in to add a task.",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+        position: "top",
       });
+      navigate("/login");
+      return;
+    }
+
+    try {
+      const response = await axios.post(
+        "http://localhost:5000/api/postTask",
+        {
+          name,
+          description,
+          priority,
+          dueDate,
+          userNumber: userInfo.userNumber,
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
 
       if (response.status === 201) {
         setName("");
         setDescription("");
         setPriority("medium");
         setDueDate("");
-        // alert("Task added successfully");
         toast({
           title: "Assignment Added Successfully",
           status: "success",
@@ -38,17 +65,30 @@ const HomePage = () => {
         });
       } else {
         console.error("Failed to add task:", response.data);
-        alert("Failed to add task");
+        toast({
+          title: "Failed to add task",
+          status: "error",
+          duration: 5000,
+          isClosable: true,
+          position: "top",
+        });
       }
     } catch (error) {
       console.error("Error adding task:", error);
-      alert("Failed to add task");
+      toast({
+        title: "Failed to add task",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+        position: "top",
+      });
     }
   };
-  const navigate = useNavigate();
+
   const goToHighProfePage = () => {
     navigate("/highPriority");
   };
+
   const goToMediumProfePage = () => {
     navigate("/mediumPriority");
   };

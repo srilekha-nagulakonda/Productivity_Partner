@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import CircularProgress from "../components/Progress";
+import axios from "axios"; // Import axios
 
 const HighPriorityPage = () => {
   const [tasks, setTasks] = useState([]);
@@ -12,15 +13,24 @@ const HighPriorityPage = () => {
     completed: false,
   });
   const [searchQuery, setSearchQuery] = useState("");
+  const [expandedDescriptionId, setExpandedDescriptionId] = useState(null);
 
   const fetchTasks = async () => {
     try {
-      const response = await fetch("/api/tasks");
-      if (!response.ok) {
-        throw new Error("Failed to fetch tasks");
-      }
-      const data = await response.json();
-      setTasks(data.filter((task) => task.priority === "high"));
+      const userInfo = JSON.parse(localStorage.getItem("userInfo"));
+      const token = userInfo?.token; // Get the token
+      const userNumber = userInfo.data.userNumber; // Use userNumber instead of userId
+
+      const response = await axios.get("http://localhost:5000/api/alltasks", {
+        headers: { Authorization: `Bearer ${token}` }, // Include Authorization header
+      });
+
+      const data = response.data;
+      setTasks(
+        data.filter(
+          (task) => task.priority === "high" && task.userNumber === userNumber // Filter by userNumber
+        )
+      );
     } catch (error) {
       console.error("Error fetching tasks:", error);
     }
@@ -32,10 +42,17 @@ const HighPriorityPage = () => {
 
   const handleRemove = async (id) => {
     try {
-      const response = await fetch(`/api/tasks/${id}`, {
-        method: "DELETE",
-      });
-      if (response.ok) {
+      const userInfo = JSON.parse(localStorage.getItem("userInfo"));
+      const token = userInfo?.token; // Get the token
+
+      const response = await axios.delete(
+        `http://localhost:5000/api/deltasks/${id}`,
+        {
+          headers: { Authorization: `Bearer ${token}` }, // Include Authorization header
+        }
+      );
+
+      if (response.status === 200) {
         setTasks(tasks.filter((task) => task._id !== id));
       } else {
         throw new Error("Failed to delete task");
@@ -47,14 +64,18 @@ const HighPriorityPage = () => {
 
   const handleToggleCompletion = async (id, completed) => {
     try {
-      const response = await fetch(`/api/tasks/${id}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ completed: !completed }),
-      });
-      if (response.ok) {
+      const userInfo = JSON.parse(localStorage.getItem("userInfo"));
+      const token = userInfo?.token; // Get the token
+
+      const response = await axios.patch(
+        `http://localhost:5000/api/updatetasks/${id}`,
+        { completed: !completed },
+        {
+          headers: { Authorization: `Bearer ${token}` }, // Include Authorization header
+        }
+      );
+
+      if (response.status === 200) {
         setTasks(
           tasks.map((task) =>
             task._id === id ? { ...task, completed: !completed } : task
@@ -85,15 +106,19 @@ const HighPriorityPage = () => {
 
   const handleSave = async (id) => {
     try {
-      const response = await fetch(`/api/tasks/${id}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(editTaskData),
-      });
-      if (response.ok) {
-        const updatedTask = await response.json();
+      const userInfo = JSON.parse(localStorage.getItem("userInfo"));
+      const token = userInfo?.token; // Get the token
+
+      const response = await axios.patch(
+        `http://localhost:5000/api/updatetasks/${id}`,
+        editTaskData,
+        {
+          headers: { Authorization: `Bearer ${token}` }, // Include Authorization header
+        }
+      );
+
+      if (response.status === 200) {
+        const updatedTask = response.data;
         setTasks(tasks.map((task) => (task._id === id ? updatedTask : task)));
         setEditTaskId(null);
       } else {
@@ -133,15 +158,16 @@ const HighPriorityPage = () => {
       ? (completedTasksCount / filteredTasks.length) * 100
       : 0;
 
+  const toggleDescription = (id) => {
+    setExpandedDescriptionId(expandedDescriptionId === id ? null : id);
+  };
+
   return (
     <div className="high-container">
       <h1 className="high-title">High Priority Tasks</h1>
       <div className="header-row">
         <div>
-          <h3 className="high-h3">
-            {" "}
-            Search the Assignment by Name/Date/Status
-          </h3>
+          <h3 className="high-h3">Search the Assignment by Name/Date/Status</h3>
           <input
             type="text"
             placeholder="Search by name, date, or status"
@@ -216,7 +242,21 @@ const HighPriorityPage = () => {
             ) : (
               <>
                 <h2>{task.name}</h2>
-                <p>{task.description}</p>
+                <p>
+                  {expandedDescriptionId === task._id
+                    ? task.description
+                    : `${task.description.slice(0, 100)}${
+                        task.description.length > 100 ? "..." : ""
+                      }`}
+                  {task.description.length > 100 && (
+                    <button
+                      className="high-more"
+                      onClick={() => toggleDescription(task._id)}
+                    >
+                      {expandedDescriptionId === task._id ? "Less" : "More"}
+                    </button>
+                  )}
+                </p>
                 <p>Due Date: {new Date(task.dueDate).toLocaleDateString()}</p>
                 <p>Status: {task.completed ? "Completed" : "Incomplete"}</p>
                 <button className="high-edit" onClick={() => handleEdit(task)}>

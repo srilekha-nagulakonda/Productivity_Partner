@@ -7,22 +7,21 @@ import axios from "axios";
 import { useToast } from "@chakra-ui/react";
 import { useNavigate } from "react-router-dom";
 
-const Login = () => {
+const Login = ({ setToken }) => {
   const [show, setShow] = useState(false);
   const handleClick = () => setShow(!show);
   const toast = useToast();
-  const [email, setEmail] = useState();
-  const [password, setPassword] = useState();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
-  // const { setUser } = ChatState();
 
   const submitHandler = async () => {
     setLoading(true);
     if (!email || !password) {
       toast({
-        title: "Please Fill all the Feilds",
+        title: "Please Fill all the Fields",
         status: "warning",
         duration: 5000,
         isClosable: true,
@@ -33,17 +32,13 @@ const Login = () => {
     }
 
     try {
-      const config = {
-        headers: {
-          "Content-type": "application/json",
-        },
-      };
+      const res = await axios.post("http://localhost:5000/api/user/login", {
+        email,
+        password,
+      });
 
-      const { data } = await axios.post(
-        "/api/user/login",
-        { email, password },
-        config
-      );
+      // Assuming res.data contains user info, including userNumber
+      localStorage.setItem("token", res.data.token); // Save userInfo in local storage
 
       toast({
         title: "Login Successful",
@@ -52,14 +47,26 @@ const Login = () => {
         isClosable: true,
         position: "bottom",
       });
-      // setUser(data);
-      localStorage.setItem("userInfo", JSON.stringify(data));
+
+      console.log(res.data.userName);
       setLoading(false);
       navigate("/home");
     } catch (error) {
+      let errorMessage = "An unexpected error occurred";
+
+      if (error.response) {
+        if (error.response.data && error.response.data.message) {
+          errorMessage = error.response.data.message;
+        } else {
+          errorMessage = "Error: " + error.response.statusText;
+        }
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+
       toast({
-        title: "Error Occured!",
-        description: error.response.data.message,
+        title: "Error Occurred!",
+        description: errorMessage,
         status: "error",
         duration: 5000,
         isClosable: true,

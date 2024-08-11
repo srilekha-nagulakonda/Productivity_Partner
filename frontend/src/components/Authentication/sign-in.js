@@ -49,7 +49,7 @@ const Signup = () => {
         },
       };
       const { data } = await axios.post(
-        "/api/user",
+        "http://localhost:5000/api/user/register",
         {
           name,
           email,
@@ -66,6 +66,7 @@ const Signup = () => {
         position: "bottom",
       });
       localStorage.setItem("userInfo", JSON.stringify(data));
+      localStorage.setItem("userName", data.userName);
       // setPicLoading(false);
       // navigate.push("/frontend/src/pages/profiles.js");
     } catch (error) {
