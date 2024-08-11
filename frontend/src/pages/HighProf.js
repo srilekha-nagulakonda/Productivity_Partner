@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import CircularProgress from "../components/Progress";
-import axios from "axios"; // Import axios
+import axios from "axios";
 
-const HighPriorityPage = () => {
+const HighPriorityPage = ({ token }) => {
   const [tasks, setTasks] = useState([]);
   const [editTaskId, setEditTaskId] = useState(null);
   const [editTaskData, setEditTaskData] = useState({
@@ -18,37 +18,37 @@ const HighPriorityPage = () => {
   const fetchTasks = async () => {
     try {
       const userInfo = JSON.parse(localStorage.getItem("userInfo"));
-      const token = userInfo?.token; // Get the token
-      const userNumber = userInfo.data.userNumber; // Use userNumber instead of userId
+      const userNumber = userInfo?.userNumber;
+
+      if (!token) {
+        throw new Error("No token found. Please log in.");
+      }
 
       const response = await axios.get("http://localhost:5000/api/alltasks", {
-        headers: { Authorization: `Bearer ${token}` }, // Include Authorization header
+        headers: { Authorization: `Bearer ${token}` },
       });
 
       const data = response.data;
       setTasks(
         data.filter(
-          (task) => task.priority === "high" && task.userNumber === userNumber // Filter by userNumber
+          (task) => task.priority === "high" && task.userNumber === userNumber
         )
       );
     } catch (error) {
-      console.error("Error fetching tasks:", error);
+      console.error("Error fetching tasks:", error.message);
     }
   };
 
   useEffect(() => {
     fetchTasks();
-  }, []);
+  }, []); // Re-fetch tasks if the token changes
 
   const handleRemove = async (id) => {
     try {
-      const userInfo = JSON.parse(localStorage.getItem("userInfo"));
-      const token = userInfo?.token; // Get the token
-
       const response = await axios.delete(
         `http://localhost:5000/api/deltasks/${id}`,
         {
-          headers: { Authorization: `Bearer ${token}` }, // Include Authorization header
+          headers: { Authorization: `Bearer ${token}` },
         }
       );
 
@@ -64,14 +64,11 @@ const HighPriorityPage = () => {
 
   const handleToggleCompletion = async (id, completed) => {
     try {
-      const userInfo = JSON.parse(localStorage.getItem("userInfo"));
-      const token = userInfo?.token; // Get the token
-
       const response = await axios.patch(
         `http://localhost:5000/api/updatetasks/${id}`,
         { completed: !completed },
         {
-          headers: { Authorization: `Bearer ${token}` }, // Include Authorization header
+          headers: { Authorization: `Bearer ${token}` },
         }
       );
 
@@ -106,14 +103,11 @@ const HighPriorityPage = () => {
 
   const handleSave = async (id) => {
     try {
-      const userInfo = JSON.parse(localStorage.getItem("userInfo"));
-      const token = userInfo?.token; // Get the token
-
       const response = await axios.patch(
         `http://localhost:5000/api/updatetasks/${id}`,
         editTaskData,
         {
-          headers: { Authorization: `Bearer ${token}` }, // Include Authorization header
+          headers: { Authorization: `Bearer ${token}` },
         }
       );
 

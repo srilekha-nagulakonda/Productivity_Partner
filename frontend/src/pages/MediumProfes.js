@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import CircularProgress from "../components/Progress";
+import axios from "axios";
 
-const MediumPriorityTasks = () => {
+const HighPriorityPage = ({ token }) => {
   const [tasks, setTasks] = useState([]);
   const [editTaskId, setEditTaskId] = useState(null);
   const [editTaskData, setEditTaskData] = useState({
@@ -16,27 +17,42 @@ const MediumPriorityTasks = () => {
 
   const fetchTasks = async () => {
     try {
-      const response = await fetch("/api/tasks");
-      if (!response.ok) {
-        throw new Error("Failed to fetch tasks");
+      const userInfo = JSON.parse(localStorage.getItem("userInfo"));
+      const userNumber = userInfo?.userNumber;
+
+      if (!token) {
+        throw new Error("No token found. Please log in.");
       }
-      const data = await response.json();
-      setTasks(data.filter((task) => task.priority === "medium"));
+
+      const response = await axios.get("http://localhost:5000/api/alltasks", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      const data = response.data;
+      setTasks(
+        data.filter(
+          (task) => task.priority === "medium" && task.userNumber === userNumber
+        )
+      );
     } catch (error) {
-      console.error("Error fetching tasks:", error);
+      console.error("Error fetching tasks:", error.message);
     }
   };
 
   useEffect(() => {
     fetchTasks();
-  }, []);
+  }, []); // Re-fetch tasks if the token changes
 
   const handleRemove = async (id) => {
     try {
-      const response = await fetch(`/api/tasks/${id}`, {
-        method: "DELETE",
-      });
-      if (response.ok) {
+      const response = await axios.delete(
+        `http://localhost:5000/api/deltasks/${id}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      if (response.status === 200) {
         setTasks(tasks.filter((task) => task._id !== id));
       } else {
         throw new Error("Failed to delete task");
@@ -48,14 +64,15 @@ const MediumPriorityTasks = () => {
 
   const handleToggleCompletion = async (id, completed) => {
     try {
-      const response = await fetch(`/api/tasks/${id}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ completed: !completed }),
-      });
-      if (response.ok) {
+      const response = await axios.patch(
+        `http://localhost:5000/api/updatetasks/${id}`,
+        { completed: !completed },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      if (response.status === 200) {
         setTasks(
           tasks.map((task) =>
             task._id === id ? { ...task, completed: !completed } : task
@@ -86,15 +103,16 @@ const MediumPriorityTasks = () => {
 
   const handleSave = async (id) => {
     try {
-      const response = await fetch(`/api/tasks/${id}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(editTaskData),
-      });
-      if (response.ok) {
-        const updatedTask = await response.json();
+      const response = await axios.patch(
+        `http://localhost:5000/api/updatetasks/${id}`,
+        editTaskData,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      if (response.status === 200) {
+        const updatedTask = response.data;
         setTasks(tasks.map((task) => (task._id === id ? updatedTask : task)));
         setEditTaskId(null);
       } else {
@@ -143,10 +161,7 @@ const MediumPriorityTasks = () => {
       <h1 className="high-title">Medium Priority Tasks</h1>
       <div className="header-row">
         <div>
-          <h3 className="high-h3">
-            {" "}
-            Search the Assignment by Name/Date/Status
-          </h3>
+          <h3 className="high-h3">Search the Assignment by Name/Date/Status</h3>
           <input
             type="text"
             placeholder="Search by name, date, or status"
@@ -264,4 +279,4 @@ const MediumPriorityTasks = () => {
   );
 };
 
-export default MediumPriorityTasks;
+export default HighPriorityPage;

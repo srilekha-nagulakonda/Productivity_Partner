@@ -65,8 +65,8 @@ const Signup = () => {
         isClosable: true,
         position: "bottom",
       });
-      localStorage.setItem("userInfo", JSON.stringify(data));
-      localStorage.setItem("userName", data.userName);
+      // localStorage.setItem("userInfo", JSON.stringify(data));
+      // localStorage.setItem("userName", data.userName);
       // setPicLoading(false);
       // navigate.push("/frontend/src/pages/profiles.js");
     } catch (error) {

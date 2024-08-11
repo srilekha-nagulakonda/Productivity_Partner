@@ -1,25 +1,43 @@
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const User = require("../models/userModel");
+const cookieParser = require("cookie-parser");
 
 const JWT_SECRET_KEY = "sri";
 
-// Middleware to authenticate the token
 const authenticateToken = (req, res, next) => {
   const authHeader = req.headers["authorization"];
   const token = authHeader && authHeader.split(" ")[1];
-  console.log("Token received:", token);
-  if (token == null) return res.sendStatus(401); // No token provided
+
+  if (!token) {
+    return res.status(401).json({ message: "Access token is missing" });
+  }
 
   jwt.verify(token, JWT_SECRET_KEY, (err, user) => {
     if (err) {
-      console.error("Token verification failed:", err);
-      return res.status(403).json({ error: "Invalid or expired token" });
+      return res.status(403).json({ message: "Invalid token" });
     }
     req.user = user;
     next();
   });
 };
+
+// Middleware to authenticate the token
+// const authenticateToken = (req, res, next) => {
+//   const authHeader = req.headers["authorization"];
+//   const token = authHeader && authHeader.split(" ")[1];
+//   console.log("Token received:", token);
+//   if (token == null) return res.sendStatus(401); // No token provided
+
+//   jwt.verify(token, JWT_SECRET_KEY, (err, user) => {
+//     if (err) {
+//       console.error("Token verification failed:", err);
+//       return res.status(403).json({ error: "Invalid or expired token" });
+//     }
+//     req.user = user;
+//     next();
+//   });
+// };
 
 // API for user registration
 const registerUser = async (req, res) => {
@@ -32,11 +50,6 @@ const registerUser = async (req, res) => {
 
     res.json({
       status: "Success",
-      data: {
-        name: newUser.name,
-        email: newUser.email,
-        userNumber: newUser.userNumber,
-      },
     });
   } catch (err) {
     console.error("Error registering user:", err);
@@ -53,7 +66,7 @@ const authUser = async (req, res) => {
     if (!user) {
       return res.json({ error: "No email existed" });
     }
-~
+
     // Compare the entered password with the hashed password in the database
     const passwordMatch = await bcrypt.compare(password, user.password);
     if (!passwordMatch) {
@@ -69,17 +82,18 @@ const authUser = async (req, res) => {
       }
     );
 
-    res.cookie("token", token);
-    res.json({ status: "Success", token });
-    // res.json({
-    //   status: "Success",
-    //   token,
-    //   data: {
-    //     name: user.name,
-    //     email: user.email,
-    //     userNumber: user.userNumber,
-    //   },
-    // });
+    // res.cookie("token", token);
+    // res.json({ status: "Success", token });
+    res.json({
+      status: "Success",
+      token,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        userNumber: user.userNumber,
+      },
+    });
   } catch (err) {
     console.error("Login error in server:", err);
     res.json({ error: "Login error in server" });

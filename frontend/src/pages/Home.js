@@ -16,8 +16,8 @@ const Profiles = () => {
     // Retrieve user info from localStorage
     const userInfo = JSON.parse(localStorage.getItem("userInfo"));
     console.log("Retrieved userInfo:", userInfo); // Debugging line
-    if (userInfo && userInfo.data && userInfo.data.name) {
-      setUserName(userInfo.data.name); // Update to access name correctly
+    if (userInfo && userInfo.name) {
+      setUserName(userInfo.name); // Update to access name correctly
     }
   }, []);
 

@@ -7,7 +7,8 @@ import { useNavigate } from "react-router-dom";
 import CircularProgress from "../components/Progress";
 import "bootstrap/dist/css/bootstrap.min.css";
 
-const HomePage = () => {
+const HomePage = ({ token }) => {
+  const navigate = useNavigate();
   const toast = useToast();
   const [priority, setPriority] = useState("personal");
   const [name, setName] = useState("");
@@ -26,27 +27,43 @@ const HomePage = () => {
 
   const fetchTasks = async () => {
     try {
-      const response = await fetch("/api/tasks");
-      if (!response.ok) {
-        throw new Error("Failed to fetch tasks");
+      const userInfo = JSON.parse(localStorage.getItem("userInfo"));
+      const userNumber = userInfo?.userNumber;
+
+      if (!token) {
+        throw new Error("No token found. Please log in.");
       }
-      const data = await response.json();
-      setTasks(data.filter((task) => task.priority === "personal"));
+
+      const response = await axios.get("http://localhost:5000/api/alltasks", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      const data = response.data;
+      setTasks(
+        data.filter(
+          (task) =>
+            task.priority === "personal" && task.userNumber === userNumber
+        )
+      );
     } catch (error) {
-      console.error("Error fetching tasks:", error);
+      console.error("Error fetching tasks:", error.message);
     }
   };
 
   useEffect(() => {
     fetchTasks();
-  }, []);
+  }, []); // Re-fetch tasks if the token changes
 
   const handleRemove = async (id) => {
     try {
-      const response = await fetch(`/api/tasks/${id}`, {
-        method: "DELETE",
-      });
-      if (response.ok) {
+      const response = await axios.delete(
+        `http://localhost:5000/api/deltasks/${id}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      if (response.status === 200) {
         setTasks(tasks.filter((task) => task._id !== id));
       } else {
         throw new Error("Failed to delete task");
@@ -58,14 +75,15 @@ const HomePage = () => {
 
   const handleToggleCompletion = async (id, completed) => {
     try {
-      const response = await fetch(`/api/tasks/${id}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ completed: !completed }),
-      });
-      if (response.ok) {
+      const response = await axios.patch(
+        `http://localhost:5000/api/updatetasks/${id}`,
+        { completed: !completed },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      if (response.status === 200) {
         setTasks(
           tasks.map((task) =>
             task._id === id ? { ...task, completed: !completed } : task
@@ -96,15 +114,16 @@ const HomePage = () => {
 
   const handleSave = async (id) => {
     try {
-      const response = await fetch(`/api/tasks/${id}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(editTaskData),
-      });
-      if (response.ok) {
-        const updatedTask = await response.json();
+      const response = await axios.patch(
+        `http://localhost:5000/api/updatetasks/${id}`,
+        editTaskData,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      if (response.status === 200) {
+        const updatedTask = response.data;
         setTasks(tasks.map((task) => (task._id === id ? updatedTask : task)));
         setEditTaskId(null);
       } else {
@@ -151,20 +170,40 @@ const HomePage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    try {
-      const response = await axios.post("/api/tasks", {
-        name,
-        description,
-        priority,
-        dueDate,
+    const userInfo = JSON.parse(localStorage.getItem("userInfo"));
+    if (!userInfo) {
+      toast({
+        title: "Authentication Required",
+        description: "Please log in to add a task.",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+        position: "top",
       });
+      navigate("/login");
+      return;
+    }
+
+    try {
+      const response = await axios.post(
+        "http://localhost:5000/api/postTask",
+        {
+          name,
+          description,
+          priority,
+          dueDate,
+          userNumber: userInfo.userNumber,
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
 
       if (response.status === 201) {
         setName("");
         setDescription("");
-        setPriority("personal");
+        setPriority("medium");
         setDueDate("");
-        // alert("Task added successfully");
         toast({
           title: "Assignment Added Successfully",
           status: "success",
@@ -174,11 +213,23 @@ const HomePage = () => {
         });
       } else {
         console.error("Failed to add task:", response.data);
-        alert("Failed to add task");
+        toast({
+          title: "Failed to add task",
+          status: "error",
+          duration: 5000,
+          isClosable: true,
+          position: "top",
+        });
       }
     } catch (error) {
       console.error("Error adding task:", error);
-      alert("Failed to add task");
+      toast({
+        title: "Failed to add task",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+        position: "top",
+      });
     }
   };
 

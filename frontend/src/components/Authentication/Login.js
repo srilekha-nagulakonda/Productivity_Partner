@@ -37,8 +37,17 @@ const Login = ({ setToken }) => {
         password,
       });
 
-      // Assuming res.data contains user info, including userNumber
-      localStorage.setItem("token", res.data.token); // Save userInfo in local storage
+      console.log("Response data:", res.data);
+      const { token, user } = res.data;
+
+      if (token && user) {
+        localStorage.setItem("token", token);
+        localStorage.setItem("userInfo", JSON.stringify(user));
+      } else {
+        throw new Error("Invalid response from server");
+      }
+
+      console.log("Stored user info:", localStorage.getItem("userInfo"));
 
       toast({
         title: "Login Successful",

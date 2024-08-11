@@ -61,7 +61,8 @@ const Task = mongoose.model("Task", TaskSchema);
 app.post("/api/postTask", authenticateToken, async (req, res) => {
   try {
     const { name, description, priority, dueDate } = req.body;
-    const userNumber = req.user.userNumber; // Ensure this is defined
+    const userNumber = req.user.userNumber; // Ensure `authenticateToken` middleware is attaching `userNumber`
+
     if (!userNumber) {
       return res.status(403).json({ message: "User number is missing" });
     }
@@ -77,20 +78,27 @@ app.post("/api/postTask", authenticateToken, async (req, res) => {
       description,
       priority,
       dueDate,
-      userNumber: req.user.userNumber, // Associate the task with the authenticated user's unique number
+      userNumber,
     });
 
     res.status(201).send(newTask);
   } catch (error) {
     console.error("Error saving task:", error);
-    res.status(500).send({ message: "Failed to add task", error });
+    res
+      .status(500)
+      .send({ message: "Failed to add task", error: error.message });
   }
 });
 
-// Apply `authenticateToken` middleware to protect other routes
 app.get("/api/alltasks", authenticateToken, async (req, res) => {
   try {
-    const tasks = await Task.find({ userNumber: req.user.userNumber }); // Only get tasks for the authenticated user by their unique number
+    if (!req.user.userNumber) {
+      return res
+        .status(403)
+        .send({ message: "User number is missing in the request." });
+    }
+
+    const tasks = await Task.find({ userNumber: req.user.userNumber });
     res.status(200).send(tasks);
   } catch (error) {
     console.error("Error retrieving tasks:", error);
